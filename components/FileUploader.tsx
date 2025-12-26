@@ -5,9 +5,10 @@ import { AttendanceRecord, ColumnMapping } from '../types';
 interface Props {
   onDataReady: (data: AttendanceRecord[], mapping: ColumnMapping) => void;
   isLoading: boolean;
+  onCloudSync: () => void;
 }
 
-const FileUploader: React.FC<Props> = ({ onDataReady, isLoading }) => {
+const FileUploader: React.FC<Props> = ({ onDataReady, isLoading, onCloudSync }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [step, setStep] = useState<'upload' | 'map'>('upload');
   const [headers, setHeaders] = useState<string[]>([]);
@@ -69,7 +70,7 @@ const FileUploader: React.FC<Props> = ({ onDataReady, isLoading }) => {
           processCsvContent(text);
           setAutoLoadStatus({ type: 'success', message: 'Peekaboo standard data source detected.' });
         } else { setAutoLoadStatus({ type: 'error', message: 'Manual upload required.' }); }
-      } catch (err) { setAutoLoadStatus({ type: 'error', message: 'System Ready.' }); }
+      } catch (err) { setAutoLoadStatus({ type: 'error', message: 'Ready for ingestion.' }); }
       finally { setIsAutoLoading(false); }
     };
     autoLoad();
@@ -114,24 +115,43 @@ const FileUploader: React.FC<Props> = ({ onDataReady, isLoading }) => {
 
   return (
     <div className="space-y-6">
-      <div className="relative flex flex-col items-center justify-center p-20 border-4 border-dashed border-slate-200 rounded-[4rem] bg-white hover:border-[#00AEEF] hover:bg-blue-50/10 transition-all cursor-pointer group shadow-inner"
-           onClick={() => !isAutoLoading && fileInputRef.current?.click()}>
-        <input type="file" className="hidden" accept=".csv" onChange={handleFileChange} ref={fileInputRef} />
-        {isAutoLoading ? (
-          <div className="flex flex-col items-center py-6">
-             <div className="w-16 h-16 border-4 border-[#00AEEF] border-t-transparent rounded-full animate-spin mb-8"></div>
-             <p className="text-[11px] font-black text-[#00AEEF] uppercase tracking-[0.4em]">Synching Peekaboo Records...</p>
-          </div>
-        ) : (
-          <>
-            <div className="w-28 h-28 bg-slate-50 text-slate-900 rounded-[2.5rem] flex items-center justify-center mb-10 group-hover:scale-110 group-hover:bg-[#00AEEF] group-hover:text-white transition-all shadow-lg border border-slate-100">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-14 w-14" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="lg:col-span-8 relative flex flex-col items-center justify-center p-20 border-4 border-dashed border-slate-200 rounded-[4rem] bg-white hover:border-[#00AEEF] hover:bg-blue-50/10 transition-all cursor-pointer group shadow-inner"
+             onClick={() => !isLoading && fileInputRef.current?.click()}>
+          <input type="file" className="hidden" accept=".csv" onChange={handleFileChange} ref={fileInputRef} />
+          {isLoading ? (
+            <div className="flex flex-col items-center py-6">
+               <div className="w-16 h-16 border-4 border-[#00AEEF] border-t-transparent rounded-full animate-spin mb-8"></div>
+               <p className="text-[11px] font-black text-[#00AEEF] uppercase tracking-[0.4em]">Synching Records...</p>
             </div>
-            <h3 className="text-3xl font-black text-slate-900 tracking-tight">Ingest Attendance Ledger</h3>
-            <p className="text-sm text-slate-400 mt-4 text-center max-w-md font-bold uppercase tracking-widest leading-relaxed">Drop CSV exports from biometric or manual logs</p>
-          </>
-        )}
+          ) : (
+            <>
+              <div className="w-28 h-28 bg-slate-50 text-slate-900 rounded-[2.5rem] flex items-center justify-center mb-10 group-hover:scale-110 group-hover:bg-[#00AEEF] group-hover:text-white transition-all shadow-lg border border-slate-100">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-14 w-14" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+              </div>
+              <h3 className="text-3xl font-black text-slate-900 tracking-tight">Ingest Attendance Ledger</h3>
+              <p className="text-sm text-slate-400 mt-4 text-center max-w-md font-bold uppercase tracking-widest leading-relaxed">Drop CSV exports from biometric or manual logs</p>
+            </>
+          )}
+        </div>
+
+        <div className="lg:col-span-4 flex flex-col gap-6">
+          <button 
+            onClick={onCloudSync}
+            disabled={isLoading}
+            className="flex-1 bg-[#00AEEF] text-white p-12 rounded-[4rem] flex flex-col items-center justify-center gap-6 group hover:bg-[#008cc1] transition-all shadow-xl shadow-blue-500/10 disabled:opacity-50"
+          >
+            <div className="w-20 h-20 bg-white/20 rounded-[2rem] flex items-center justify-center backdrop-blur-md group-hover:scale-110 transition-transform">
+               <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" /></svg>
+            </div>
+            <div className="text-center">
+              <h4 className="text-2xl font-black tracking-tight">Sync Cloud</h4>
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-60 mt-1">Google Sheets Data Link</p>
+            </div>
+          </button>
+        </div>
       </div>
+
       {autoLoadStatus.type !== 'none' && (
         <div className={`p-6 rounded-[2rem] flex items-center gap-4 animate-in fade-in slide-in-from-top-4 border ${autoLoadStatus.type === 'success' ? 'bg-[#2EBB55]/10 text-[#2EBB55] border-[#2EBB55]/20 shadow-xl shadow-[#2EBB55]/5' : 'bg-slate-100 text-slate-500 border-slate-200'}`}>
           <div className={`w-3 h-3 rounded-full ${autoLoadStatus.type === 'success' ? 'bg-[#2EBB55] animate-pulse' : 'bg-slate-400'}`}></div>

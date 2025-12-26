@@ -9,6 +9,7 @@ export interface ColumnMapping {
   checkIn: string;
   checkOut: string;
   paid: string; 
+  penalty?: string; // Added to map Column K (Manual Penalties)
 }
 
 export interface CleansingLog {
@@ -27,16 +28,18 @@ export interface DayShift {
   latenessMinutes: number;
   earlyMinutes: number; 
   workHours: number;
+  durationHours: number; 
   otHours: number;
   otPay: number;
-  standardPay: number; // Always 10 JD
-  attendancePenalty: number; // 3, 5, or 10 JD
-  manualAdjustment: number; // For "Other" penalties
-  penaltyWaiver: number; // New: To remove/waive penalties
-  adjustmentNote?: string; // New: Reason for the change
-  netPay: number; // (10 - attendancePenalty + otPay) - manualAdjustment + penaltyWaiver
-  amountPaid: number; // From Column L
-  balanceRemaining: number; // netPay - amountPaid
+  standardPay: number; 
+  attendancePenalty: number; 
+  manualPenalty: number; // For manual deduction from Column K
+  manualAdjustment: number; 
+  penaltyWaiver: number; 
+  adjustmentNote?: string; 
+  netPay: number; 
+  amountPaid: number; 
+  balanceRemaining: number; 
 }
 
 export interface EmployeeSummary {
@@ -46,12 +49,14 @@ export interface EmployeeSummary {
   totalStandardPay: number;
   totalOTPay: number;
   totalAttendancePenalties: number;
+  totalManualPenalties: number;
   totalManualAdjustments: number;
   totalPenaltyWaivers: number;
   netSalary: number;
   amountPaid: number;
   netRemaining: number;
   rank?: number;
+  penaltyFreeDays: number;
 }
 
 export interface MonthlyStat {
@@ -61,15 +66,19 @@ export interface MonthlyStat {
   otPay: number;
   penalties: number;
   netPay: number;
+  totalPaid: number;
 }
 
 export interface StrategicInsights {
-  mostReliable: { name: string; days: number };
-  topLateOffender: { name: string; amount: number };
-  penaltyRate: number;
+  mostReliable: { name: string; penaltyFreeDays: number };
+  topLateOffender: { name: string; totalAttendancePenalties: number };
+  penaltyRecoveryRate: number; 
   totalOTHours: number;
-  totalEarlyEvents: number;
-  totalLateEvents: number;
+  shiftAUsage: number;
+  shiftBUsage: number;
+  shiftCUsage: number;
+  perfectAttendanceStaff: string[];
+  totalFutureLiability: number; 
 }
 
 export interface PayrollResult {
@@ -83,10 +92,11 @@ export interface PayrollResult {
   totalPaidDisbursed: number;
   totalRemainingBalance: number;
   totalDaysWorked: number;
-  totalLatenessMins: number; // New: aggregate lateness
+  totalLatenessMins: number; 
   efficiencyScore: number;
   monthlyStats: MonthlyStat[];
   insights: StrategicInsights;
   detailedLogs: DayShift[];
   cleansingLogs: CleansingLog[];
+  dateRange: { start: string; end: string };
 }
